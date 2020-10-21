@@ -1,0 +1,600 @@
+CI 持续集成---> 持续交付   (质量团队、用户)---> 持续部署
+
+角色： 开发  运维  测试
+
+拉取代码--- 编译--  
+java---class---配置文件加入---打包 jar war ---        发布到测试环境--- 线上环境
+
+自动化集成 
+
+持续？----不停地
+集成。。。。
+	CI/CD         
+
+
+python   服务器软件
+java 
+git      gitlab        github ?
+
+微服务
+
+开发过程： 编码、构建、集成、测试、   交付、部署
+				CI					CD
+			把这个过程尽量的标准化、自动化--意义：减少人工、提高速度、提高准确率、事故快速恢复
+
+技术栈：	
+	版本管理（主要是配置文件、代码、文档）：svn、 git（gitlab）
+	构建： Ant、Maven
+	代码审查：Gerrit、Sonar
+	单元测试：Junit、Pytest.....
+	自动化测试
+	集成工具：Jenkins、Bamboo
+	容器：Docker（构建镜像、部署容器）、Kubernetes（管理服务群）
+
+
+一、代码管理--git/gitlab
+
+起步：
+
+	1.1 关于版本控制
+		版本控制是一种记录一个或若干文件内容变化，以便将来查阅特定版本修订情况的系统。
+		--不光要存储文件，还要管理文件的变更信息
+
+		文件：代码、配置文件、项目文档....
+
+		本地版本控制系统
+
+		集中化的版本控制系统
+			CVS、SVN
+
+		分布式版本控制系统
+			git
+git优势
+
+	git是分布式的，svn不是
+	GIT分支和SVN的分支不同
+		分支在SVN中实际上是版本库中的一份copy，而git一个仓库是一个快照，所以git 切换、合并分支等操作更快速。
+	git有一个强大的代码仓库管理系统 - gitlab
+		可以很方便的管理权限、代码review，创建、管理project
+
+
+本地git
+
+	git 基础
+		Git 的思想和基本工作原理
+			1. 对于每个版本，存储快照的是变更文件的快照，而非变更信息
+			2. 近乎所有操作都是本地执行
+
+		Git 的三种工作区域与文件的三种状态
+
+			工作目录: 是对项目的某个版本独立提取出来的内容。 这些从 Git 仓库的压缩数据库中提取出来的文件，放在磁盘上供你使用或修改。
+
+			暂存区域: 是一个文件，保存了下次将提交的文件列表信息，一般在 Git 仓库目录中。 有时候也被称作`‘索引’'，不过一般说法还是叫暂存区域。
+
+			Git 仓库目录: Git 用来保存项目的元数据和对象数据库的地方。 这是 Git 中最重要的部分，从其它计算机克隆仓库时，拷贝的就是这里的数据。
+
+			基本的 Git 工作流程如下：
+				将 Git 仓库的代码克隆到本地工作目录中。
+				在工作目录中修改文件。
+				暂存文件，将文件的快照放入暂存区域。
+				提交更新，找到暂存区域的文件，将快照永久性存储到 Git 仓库目录。
+
+			你的文件有三种状态：已修改（modified）、已暂存（staged）、已提交（committed）
+				已修改表示修改了文件，但还没保存到数据库中。 
+				已暂存表示对一个已修改文件的当前版本做了标记，使之包含在下次提交的快照中。
+				已提交表示数据已经安全的保存在本地数据库中。 
+
+		本地Git的安装与配置
+			首先，你可以试着输入git，看看系统有没有安装Git。如果没有提示命令不可用，说明你的系统里已经安装了git
+
+			在Linux上安装Git	
+				如果你碰巧用Debian或Ubuntu Linux，通过一条sudo apt-get install git就可以直接完成Git的安装，非常简单
+				如果是其他Linux版本，可以直接通过源码安装。
+					先从Git官网下载源码: https://git-scm.com/downloads
+					然后解压，进入解压缩路径后，依次执行：./config，make，sudo make install这几个命令安装就好了
+					
+				centos更新本地git版本 https://blog.csdn.net/daerzei/article/details/79282643
+
+			在Mac OS X上安装Git
+				如果你正在使用Mac做开发，有两种安装Git的方法。
+				一是安装homebrew，然后通过homebrew安装Git，具体方法请参考homebrew的文档：http://brew.sh/
+
+				第二种方法更简单，也是推荐的方法，就是直接从AppStore安装Xcode，Xcode集成了Git，不过默认没有安装，你需要运行Xcode，选择菜单“Xcode”->“Preferences”，在弹出窗口中找到“Downloads”，选择“Command Line Tools”，点“Install”就可以完成安装了。
+
+			在Windows上安装Git
+				在Windows上使用Git，可以从Git官网直接下载安装程序，（网速慢的同学请移步国内镜像），然后按默认选项安装即可。安装完成后，在开始菜单里找到“Git”->“Git Bash”，跳出一个类似命令行窗口的东西，就说明Git安装成功！
+
+			Git 有多种使用方式。 你可以使用原生的命令行模式，也可以使用 GUI 模式，这些 GUI 软件也能提供多种功能。 
+			我们将使用命令行模式。这是由于
+				1. 只有在命令行模式下你才能执行 Git 的 所有 命令
+				2. 如果你学会了在命令行下如何操作，那么你在操作 GUI 
+				软件时应该也不会遇到什么困难，但是，反之则不成立。
+
+			Git配置
+				Git 自带一个 git config 的工具来帮助设置控制 Git 外观和行为的配置变量
+				这些变量存储在三个不同的位置：
+				/etc/gitconfig 文件: 包含系统上每一个用户及他们仓库的通用配置。 如果使用带有 --system 选项的 git config 时，它会从此文件读写配置变量。
+
+				~/.gitconfig 或 ~/.config/git/config 文件：只针对当前用户。 可以传递 --global 选项让 Git 读写此文件。
+
+				当前使用仓库的 Git 目录中的 config 文件（就是 .git/config）：针对该仓库。
+
+				如果想要检查你的配置，可以使用 git config --list 命令来列出所有 Git 当时能找到的配置
+
+				用户信息：
+				$ git config --global user.name "Your Name"
+				$ git config --global user.email "email@example.com"
+				因为Git是分布式版本控制系统，所以，每个机器都必须自报家门：你的名字和Email地址。
+				注意git config命令的--global参数，用了这个参数，表示你这台机器上所有的Git仓库都会使用这个配置，当然也可以对某个仓库指定不同的用户名和Email地址。		
+
+
+			新建本地版本库
+				什么是版本库呢？版本库又名仓库，英文名repository，你可以简单理解成一个目录，这个目录里面的所有文件都可以被Git管理起来，每个文件的修改、删除，Git都能跟踪，以便任何时刻都可以追踪历史，或者在将来某个时刻可以“还原”。
+
+				1. 选择一个合适的地方，创建一个空目录
+
+				2. 通过git init命令把这个目录变成Git可以管理的仓库
+				当前目录下多了一个隐藏的名字叫.git的目录，这个目录是Git来跟踪管理版本库的
+
+			克隆现有仓库
+				Git 克隆的是该 Git 仓库服务器上的几乎所有数据，而不是仅仅复制完成你的工作所需要文件。
+				git clone [url]   https://github.com/zachlau/Dev_PT.git
+
+				上面的例子使用的是 https:// 协议，不过你也可以使用 git:// 协议或者使用 SSH 传输协议，比如 user@server:path/to/repo.git 。 后面将会介绍所有这些协议在服务器端如何配置使用，以及各种方式之间的利弊。
+
+			检查当前文件状态
+				git status
+				子命令：git status -s
+					 ??未跟踪
+					 A 新添加到暂存区中的文件
+					 出现在右边的M 表示该文件被修改了但是还没放入暂存区
+					 出现在靠左边的 M 表示该文件被修改了并放入了暂存区
+
+			忽略文件
+				一般我们总会有些文件无需纳入 Git 的管理
+				在这种情况下，我们可以创建一个名为 .gitignore 的文件，列出要忽略的文件模式
+				文件 .gitignore 的格式规范如下：
+					所有空行或者以 ＃ 开头的行都会被 Git 忽略。
+					可以使用标准的 glob 模式匹配。
+					匹配模式可以以（/）开头防止递归。
+					匹配模式可以以（/）结尾指定目录。
+					要忽略指定模式以外的文件或目录，可以在模式前加上惊叹号（!）取反。
+					
+			**git diff
+
+			暂存修改： git add
+
+			这是个多功能命令：可以用它开始跟踪新文件（文件从未跟踪--->已跟踪），或者把已跟踪的文件放到暂存区，还能用于合并时把有冲突的文件标记为已解决状态
+
+			提交更新： git commit  将暂存区的修改一次性提交
+
+					子命令：
+						 -a 选项，Git 就会自动把所有已经跟踪过的文件暂存起来一并提交，从而跳过 git add 步骤
+						 -m 选项, 添加本次提交的说明。可以输入任意内容，当然最好是有意义的，这样你就能从历史记录里方便地找到改动记录。
+
+				把文件添加到版本库
+					第一步，在git目录下创建一个文件
+					第二步，用命令git add告诉Git，把文件添加到暂存区域
+					第三步，用命令git commit告诉Git，把文件提交到仓库   
+					注意：多次add 一次提交
+
+			移除文件
+				1. 从暂存区域移除
+					git rm 命令完成此项工作，并连带从工作目录中删除指定的文件
+					如果删除之前修改过并且已经放到暂存区域的话，则必须要用强制删除选项 -f
+					我们想把文件从 Git 仓库中删除（亦即从暂存区域移除），但仍然希望保留在当前工作目录中
+						git rm --cached xxx
+				2. 提交修改
+
+			移动文件
+				git mv file_from file_to
+				其实，运行 git mv 就相当于运行了下面三条命令：
+					$ mv README.md README
+					$ git rm README.md
+					$ git add README
+
+			查看提交历史
+				git log --会按提交时间列出所有的更新，最近的更新排在最上面
+					sha1的字符串是版本号
+					--pretty=oneline
+					-p ，用来显示每次提交的内容差异
+					-2 ，来仅显示最近两次提交
+				git reflog 用来记录你的每一次命令详细信息
+
+			撤销操作
+				1.丢弃工作区的修改
+					git checkout -- readme.txt
+						意思就是，把readme.txt文件在工作区的修改全部撤销
+						readme.txt自修改后还没有被放到暂存区，现在，撤销修改就回到和版本库一模一样的状态；
+						readme.txt已经添加到暂存区后，又作了修改，现在，撤销修改就回到添加到暂存区后的状态。
+					git clean -f
+				2. 丢弃上一次保存在暂存区的修改
+					git reset --hard HEAD <file>
+
+				3. 版本回退 --还没有把自己的本地版本库推送到远程
+
+					git reset --hard 版本号 --- 本地版本回退到指定版本号
+					git push -f             --- 强制回退远程仓库到当前版本
+
+					git reset HEAD
+					用HEAD表示当前版本，上一个版本就是HEAD^，上上一个版本就是HEAD^^
+					当然往上100个版本写100个^比较容易数不过来，所以写成HEAD~100
+					或者输入版本号的前几位
+
+	远程仓库
+		GitHub
+			创建SSH Key
+
+				第1步：创建SSH Key
+					打开Shell（Windows下打开Git Bash），创建SSH Key：
+					$ ssh-keygen -t rsa
+					在用户主目录里找到.ssh目录，里面有id_rsa和id_rsa.pub两个文件，这两个就是SSH Key的秘钥对，id_rsa是私钥，不能泄露出去，id_rsa.pub是公钥，可以放心地告诉任何人
+
+				第2步：登陆GitHub，打开“settings”，“SSH and GPG Keys”页面：然后，点“New SSH Key”，填上任意Title，在Key文本框里粘贴id_rsa.pub文件的内容
+
+			公钥与私钥
+				https://blog.csdn.net/linuxnews/article/details/51119862
+
+			创建库-- GitHub页面建库
+
+			同步本地库到远程库
+				1. 关联远程库
+					在本地工作目录下执行
+						git remote add xxx(origin) url
+				2. 推送本地库得内容到远程库
+						git push -u origin master
+
+		从远程仓库克隆项目
+			htps or ssh
+
+		git remote 
+			git remote add origin 'url'
+						   <name>
+			git remote -v
+			git remote remove <name>
+
+		git fetch
+			将远程主机的最新内容拉到本地，用户在检查了以后决定是否合并到工作本机分支中
+			git fetch <远程主机名> <分支名> 
+			git fetch origin master
+
+ 		git pull
+ 			将远程主机的最新内容拉下来后直接合并
+ 			即：git pull = git fetch + git merge
+
+		git push 命令
+			git push [remote-name] [branch-name]
+			git push -u origin master
+
+
+	git 分支管理
+		分支在实际开发中有什么用呢？假如你准备开发一个新功能，由于没有完全开发完成，提交代码后会影响其他功能。
+		创建一个属于你自己的分支，别人看不到，还继续在原来的分支上正常工作，而你在自己的分支上干活，想提交就提交，直到开发完毕后，再一次性合并到原来的分支上。
+		在Git里，默认的这个分支叫主分支，即master分支
+
+		创建分支
+			git branch dev
+
+		切换到某个分支
+			git checkout dev
+
+		新建分支并切换到该分支
+			git checkout命令加上-b
+
+		查看当前所有分支
+			git branch
+
+		合并分支
+			git merge dev 把dev分支的工作成果合并到master分支上
+
+		删除分支
+			git branch -d dev
+			如果要强行删除已经提交但并未合并的分支，可以用 子命令 -D
+
+	解决冲突
+		解决冲突就是把Git合并失败的文件手动编辑为我们希望的内容，再提交
+
+
+	分支策略
+		master分支应该是非常稳定的，也就是仅用来发布新版本，平时不能在上面干活
+		个人分支合并到dev分支
+
+	多人协作
+		首先，可以试图用git push origin <branch-name>推送自己的修改；
+
+		如果推送失败，则因为远程分支比你的本地更新，需要先用git pull试图合并；
+
+		如果合并有冲突，则解决冲突，并在本地提交；
+
+		没有冲突或者解决掉冲突后，再用git push origin <branch-name>推送就能成功！
+
+		如果git pull提示no tracking information，则说明本地分支和远程分支的链接关系没有创建，用命令git branch --set-upstream-to <branch-name> origin/<branch-name>
+
+
+gitlab -- 是一个基于Git实现的在线代码仓库托管软件，你可以用gitlab自己搭建一个类似于Github一样的系统，一般用于在企业、学校等内部网络搭建git私服
+
+	gitlab简介
+		优势：基础功能开源，可自行搭建
+			 可进行权限控制
+			 免费提供无限数量的私人和公共存储库
+
+	gitlib环境搭建
+
+		https://about.gitlab.com/install/
+
+		linux必要配置：
+			1.在防火墙开放http和ssh端口
+				(sudo yum lokkit)
+				配置ssh服务
+					sudo yum install -y curl policycoreutils-python openssh-server cronie
+					sudo yum install openssh-server
+					service sshd start
+				sudo yum install postfix  --安装Postfix以发送通知邮件
+				sudo service postfix start
+				##sudo chkconfig iptables on --**开启防火墙
+				sudo chkconfig postfix on
+				sudo lokkit -s http -s ssh
+
+			2.添加gitlab仓库，并安装
+				curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh | sudo bash
+				sudo EXTERNAL_URL="http://127.0.0.1" yum -y install gitlab-ee
+				离线安装版： sudo EXTERNAL_URL="http://127.0.0.1" yum localinstall  gitlab-ce-10.4.0-ce.0.el7.x86_64.rpm
+
+			3.启动gitlab
+				配置重启
+					sudo gitlab-ctl reconfigure
+					sudo gitlab-ctl start
+				修改访问地址和端口号
+					/etc/gitlab/gitlab.rb
+
+			4. 访问地址 http://127.0.0.1  默认占用80端口
+					使用默认帐号 root登录，第一次有提示修改密码，按修改后的密码登录
+
+
+			5 卸载
+				sudo gitlab-ctl uninstall
+				sudo rpm -e gitlab-ee
+				find / -name gitlab|xargs rm -rf
+
+			6 修改端口号		
+				cd /var/opt/gitlab/nginx/conf
+				vim gitlab-http.conf
+				找到server字样：
+				#本例把80端口修改为8040
+				server {
+				  listen *:8084; --修改端口
+
+				vim /etc/gitlab/gitlab.rb
+				unicorn['port'] = 9090
+
+
+	gitlab协同作业
+		ssh密钥设置：每次不需要使用用户名和密码即可验证GitLab服务器
+			基本步骤：把你本地的git用户公钥，上传到gitlab服务器的"白名单"中
+
+		项目管理
+
+		用户管理
+
+
+二、Jenkins基础
+	官网： https://jenkins.io/zh/
+	1. Linux下 Jenkins的安装
+		1. 安卓配置maven
+		2. 安装jenkins
+			在线版：
+				sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+				sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+				yum install jenkins
+			离线版：
+				下载.rpm文件包
+				执行  yum localinstall jenkins-2.176.3-1.1.noarch.rpm
+		3. 修改配置信息
+			vi /etc/sysconfig/jenkins
+
+				JENKINS_PORT="8080"
+				默认是这样的，我们可以随意修改成自己需要的端口号，避免冲突
+					JENKINS_PORT="8888"
+		4. 启动服务
+			service jenkins start
+
+			如果提示找不到java：
+				vim  /etc/init.d/jenkins
+				candidates=" " 在此区域修改java home路径
+
+	2. 入门配置
+		访问：ip:8888
+		1. 复制本地密码，解锁 Jenkins
+		2. 在线安装插件，如果网速ok可以---不要选择安装推荐的插件!!!!会超级慢！！！
+
+			Jenkins插件离线安装：https://plugins.jenkins.io/ 下载hpi文件，在插件管理中加载后安装
+
+			必须插件：maven（Maven Integration plugin）、git、Gitlab Hook Plugin
+
+	3. 构建一个maven项目
+		拉取代码
+			配置gitlab仓库
+			给jenkins配置凭证--git私钥
+		完成maven构建
+			项目原始地址：https://gitee.com/jishenghua/JSH_ERP
+			0. sudo fuser -k -n tcp 9001
+			1. 修改两个端口号：9001、9002
+			2. mvn install
+			3. 解压bin目录下的zip文件    ---unzip    windows: https://blog.51cto.com/mflag/2178894   
+															 7z x src.zip -y
+			4. 执行start.sh h或start.bat  ---nohup sh start.sh &
+			5. 访问locolhost:9001  登录用户admin 密码123456
+				cd ./JSH_ERP/bin
+				unzip -o ./jshERP2.0.zip
+				nohup sh start.sh &
+		完成部署
+			本地部署
+
+			节点管理与远程部署
+
+
+三、接口、UI自动化测试集成
+
+selenium 项目
+登录功能--两个自动化测试脚本
+
+requests+unittest
+
+接口1：http://127.0.0.1:8080/user/login
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+loginame=admin&password=e10adc3949ba59abbe56e057f20f883e
+
+接口2：http://127.0.0.1:8080/material/findByOrder
+
+集成步骤：
+	1. gitlab创建新的项目
+	2. 上传自动化代码
+	3. jenkins创建下游项目
+	4. ERP构建任务成功启动该项目
+	5. 在windows节点机上运行该任务
+	6. 安装报告推送插件（HTML Publisher），将自动化测试报告推送到Jenkins Master前端
+
+四、SonarQube
+
+Sonar是一个用于代码质量管理的开源平台，用于管理代码的质量，通过插件形式可以支持二十几种语言的代码质量检测，通过多个维度的检查了快速定位代码中潜在的或者明显的错误；
+
+SonarQube是sonar的服务端，相当于一个web服务器中的tomcat，用来发布应用，在线浏览分析等
+
+SonarQube Scanner 源代码分析工具
+SonarQube Server 提供服务，用来提供分析报表及解决方法
+SonarQube Database 相关分析数据的持久化存储
+
+安装和配置
+
+	JDK  1.8以上
+	SonarQube服务器需要至少2GB的RAM才能有效运行
+	MySql 5.6 +
+	Navicat Premium 数据库查看工具
+	SonarQube
+	Sonar-Scanner
+
+官网下载地址： https://www.sonarqube.org/downloads/
+	
+	1. 下载好sonarqube后，解压打开bin目录，启动相应OS目录下的StartSonar。如演示使用的是win的64位系统，
+	   打开D:\sonar\sonarqube-5.3\sonarqube-5.3\bin\windows-x86-64\StartSonar.bat
+
+	2. 启动浏览器，访问http://localhost:9000
+
+	打开mysql，新建一个数据库。
+
+	3.打开sonarqube安装目录下的D:\sonar\sonarqube-5.3\sonarqube-5.3\conf\sonar.properties文件
+
+	4.在mysql5.X节点下输入以下信息
+		sonar.jdbc.url=jdbc:mysql://xxx.xx.xx.xxx:3306/sonar?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true&useConfigs=maxPerformance
+		sonar.jdbc.username=root
+		sonar.jdbc.password=123456
+		sonar.sorceEncoding=UTF-8
+		sonar.login=admin
+		sonar.password=admin
+
+			url是数据库连接地址，
+			username是数据库用户名，
+			jdbc.password是数据库密码，
+			login是sonarqube的登录名，
+			sonar.password是sonarqube的密码
+
+	5.重启sonarqube服务，再次访问http://localhost:9000，会稍微有点慢，因为要初始化数据库信息
+
+	6.数据库初始化成功后，登录
+
+	SonarQube默认为英文，我们可以安装SonarQube提供提供了中文插件，以便更好地熟悉使用。
+	github地址：
+	https://github.com/SonarQubeCommunity/sonar-l10n-zh
+	下载后，放入sonar目录如下	sonarqube-x.x\extensions\plugins
+	重启服务
+
+
+扫描方式：
+	1. 通过命令行扫描
+	2. 通过构建工具扫描，如Ant、Maven、Gradle
+	3. 通过持续集成平台插件扫描，jenkins
+	4. 通过本地代码扫描，如IDEA、Eclipse插件
+
+
+与Jenkins的集成
+
+	jenkins 插件： SonarQube Scanner for Jenkins
+
+	1. 在Jenkins的系统管理-->系统设置-->SonarQube servers配置区域，选择 Enable injection of SonarQube server configuration as build environment variables
+	2. 新增一个SonarQube servers：
+		服务名称
+		服务地址
+		令牌：
+			登录sonarqube服务，我的账户--安全--生成令牌
+	3. 添加Jenkins全局配置 - SonarQube Scanner
+		Jenkins 系统管理->全局配置（Global Tool Configuration）
+
+	4. 配置maven项目
+		这里采取构建后分析源码
+
+	5. Analysis properties 填写配置
+
+		sonar.projectKey=apigateway
+		sonar.projectName=apigateway 
+		sonar.language=java
+		sonar.java.source=1.8
+		sonar.sources=${WORKSPACE}/JSH_ERP/src/main/java/
+		sonar.java.binaries=${WORKSPACE}/JSH_ERP/target/classes
+
+结果分析：
+
+
+	问题类型：
+		Bug： 可能会导致应用的功能不正常和不稳定的潜在问题，需要修复
+		漏洞：代码中一些安全方面问题，如果不修复，会有一些安全隐患
+		坏味道：关于代码的可维护性和写法规范的一些问题，如果问题太多可能会导致后期修改和重构很困难
+
+	问题级别分类：
+		阻断： 有很高概率影响程序行为的bug，比如内存泄漏，没有关闭的JDBC连接，这类问题必须立即修复
+		严重： 有低概率影响应用程序行为的bug，或者是表现出的安全缺陷，如空的catch块、SQL注入等，这类问题必须尽快评估和审查
+		主要： 高度影响开发人员生产力的质量缺陷，比如，没有重复代码段、没有使用的参数等
+		次要： 轻微影响开发人员生产力的质量缺陷，比如，代码行过长、switch语句至少3个case分支等
+		提示： 不是bug也是质量缺陷，只是发现和提示
+
+	扫描规则：	参考博客：https://blog.csdn.net/zhuangchuanao/article/details/82893762
+		7.7版本的Java  Sonar way共有规则254条，相关的数量如下：
+
+			总类							  规则数量
+			缺陷（Bug）						75
+			安全（Vulnerability）			20
+			改善（Code Smell）				159
+
+		缺陷
+			“.equals()” should not be used to test the values of “Atomic” classes
+				不要使用equals方法对AtomicXXX进行是否相等的判断
+				Atomic变量永远只会和自身相等，Atomic变量没有覆写equals()方法
+			Classes should not be compared by name  不要用类名称比较类是否相同，而用instanceof或者Class.isAssignableFrom()进行底动类型比较
+			“BigDecimal(double)” should not be used  因为浮点的不精确,可能使用BigDecimal(double)得不到期望的值
+			“Calendars” and “DateFormats” should not be static
+				不要在多线程环境下将这两个类成员声明为static，Calendars和DateFormats并不是线程安全的类型，
+				意味着在多线程环境下，可能由于其他线程改变了这两个静态成员对象导致当前线程使用时无法得到理想的结果。
+
+		安全
+			“ConcurrentLinkedQueue.size()” should not be used   --https://blog.csdn.net/luckykapok918/article/details/8278197
+			“wait(…)” should be used instead of “Thread.sleep(…)” when a lock is held
+			当持有锁的当前线程调用Thread.sleep(...)可能导致性能和扩展性问题，甚至死锁因为持有锁的当前线程已冻结.合适的做法是锁对象wait()释放锁让其它线程进来运行
+			Cookies should be “secure”
+
+		改善
+			“catch” clauses should do more than rethrow  --只是重新抛出捕获的异常和完全放弃异常捕获效果一样，但会给维护者带来疑惑
+			“for” loop stop conditions should be invariant --循环停止条件应为不变
+			"NullPointerException" should not be caught  --空指针不应捕获处理，应该避免NullPointerException，而不是被捕获
+
+
+五、覆盖率统计
+
+
+
+六、Docker
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+0.0  关于端口的几个必要命令：
+lsof -i tcp:80
+netstat -anp | grep 8080
